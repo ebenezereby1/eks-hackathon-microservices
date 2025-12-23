@@ -1,0 +1,52 @@
+name: Build & Deploy Microservices to EKS
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::173763385083:role/github-actions-terraform-eks
+        aws-region: ap-south-1
+
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build & Push Patient Service
+      run: |
+        docker build -t patient-service ./patient-service
+        docker tag patient-service:latest \
+          173763385083.dkr.ecr.ap-south-1.amazonaws.com/patient-service:latest
+        docker push \
+          173763385083.dkr.ecr.ap-south-1.amazonaws.com/patient-service:latest
+
+    - name: Build & Push Appointment Service
+      run: |
+        docker build -t appointment-service ./appointment-service
+        docker tag appointment-service:latest \
+          173763385083.dkr.ecr.ap-south-1.amazonaws.com/appointment-service:latest
+        docker push \
+          173763385083.dkr.ecr.ap-south-1.amazonaws.com/appointment-service:latest
+
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig \
+          --region ap-south-1 \
+          --name hackathon-eks-dev
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f k8s/
