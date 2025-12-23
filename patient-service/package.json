@@ -1,0 +1,12 @@
+{
+  "name": "patient-service",
+  "version": "1.0.0",
+  "description": "Patient microservice for EKS hackathon",
+  "main": "patient-service.js",
+  "scripts": {
+    "start": "node patient-service.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
