@@ -4,7 +4,7 @@ const app = express();
 // ✅ STANDARDIZED PORT
 const PORT = process.env.PORT || 3000;
 
-// Docker Compose service name + container port
+// Appointment service internal URL
 const APPOINTMENT_SERVICE_URL =
   process.env.APPOINTMENT_SERVICE_URL || "http://appointment-service:8081";
 
@@ -17,8 +17,10 @@ let patients = [
 ];
 
 // =======================
-// Health Check
+// ORIGINAL ROUTES (KEEP)
 // =======================
+
+// Health check
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "OK",
@@ -26,9 +28,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-// =======================
 // Get all patients
-// =======================
 app.get("/patients", (req, res) => {
   res.json({
     message: "Patients retrieved successfully",
@@ -37,9 +37,7 @@ app.get("/patients", (req, res) => {
   });
 });
 
-// =======================
 // Get patient by ID
-// =======================
 app.get("/patients/:id", (req, res) => {
   const patient = patients.find(p => p.id === req.params.id);
 
@@ -53,9 +51,7 @@ app.get("/patients/:id", (req, res) => {
   }
 });
 
-// =======================
 // Create new patient
-// =======================
 app.post("/patients", (req, res) => {
   try {
     const { name, age, condition } = req.body;
@@ -86,10 +82,46 @@ app.post("/patients", (req, res) => {
   }
 });
 
-// ==================================================
-// 🔥 Patient → Appointment Service Call
-// ==================================================
-app.get("/appointments/health", async (req, res) => {
+// =======================
+// 🔥 ALB PREFIX ROUTES
+// =======================
+
+// ALB → /patient/health
+app.get("/patient/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    service: "Patient Service"
+  });
+});
+
+// ALB → /patient/patients
+app.get("/patient/patients", (req, res) => {
+  res.json({
+    message: "Patients retrieved successfully",
+    count: patients.length,
+    patients
+  });
+});
+
+// ALB → /patient/patients/:id
+app.get("/patient/patients/:id", (req, res) => {
+  const patient = patients.find(p => p.id === req.params.id);
+
+  if (patient) {
+    res.json({
+      message: "Patient found",
+      patient
+    });
+  } else {
+    res.status(404).json({ error: "Patient not found" });
+  }
+});
+
+// =======================
+// Patient → Appointment health (internal)
+// =======================
+
+app.get("/patient/appointments/health", async (req, res) => {
   try {
     const response = await fetch(`${APPOINTMENT_SERVICE_URL}/health`);
     const data = await response.json();
@@ -107,8 +139,9 @@ app.get("/appointments/health", async (req, res) => {
 });
 
 // =======================
-// Start server
+// START SERVER
 // =======================
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Patient service listening at http://0.0.0.0:${PORT}`);
 });
