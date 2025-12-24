@@ -10,6 +10,10 @@ let appointments = [
   { id: '2', patientId: '2', date: '2023-06-16', time: '14:00', doctor: 'Dr. Johnson' }
 ];
 
+// =======================
+// ORIGINAL ROUTES (KEEP)
+// =======================
+
 // Health check
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', service: 'Appointment Service' });
@@ -20,7 +24,7 @@ app.get('/appointments', (req, res) => {
   res.json({
     message: 'Appointments retrieved successfully',
     count: appointments.length,
-    appointments: appointments
+    appointments
   });
 });
 
@@ -30,7 +34,7 @@ app.get('/appointments/:id', (req, res) => {
   if (appointment) {
     res.json({
       message: 'Appointment found',
-      appointment: appointment
+      appointment
     });
   } else {
     res.status(404).json({ error: 'Appointment not found' });
@@ -67,26 +71,34 @@ app.post('/appointments', (req, res) => {
   }
 });
 
-// Get appointments by patient ID
-app.get('/patients/:patientId/appointments', (req, res) => {
-  try {
-    const patientId = req.params.patientId;
-    const patientAppointments = appointments.filter(
-      appt => appt.patientId === patientId
-    );
+// =======================
+// 🔥 ALB PREFIX ROUTES (NEW)
+// =======================
 
-    if (patientAppointments.length > 0) {
-      res.json({
-        message: `Found ${patientAppointments.length} appointment(s) for patient ${patientId}`,
-        appointments: patientAppointments
-      });
-    } else {
-      res.status(404).json({
-        message: `No appointments found for patient ${patientId}`
-      });
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+// ALB → /appointment/health
+app.get('/appointment/health', (req, res) => {
+  res.status(200).json({ status: 'OK', service: 'Appointment Service' });
+});
+
+// ALB → /appointment/appointments
+app.get('/appointment/appointments', (req, res) => {
+  res.json({
+    message: 'Appointments retrieved successfully',
+    count: appointments.length,
+    appointments
+  });
+});
+
+// ALB → /appointment/appointments/:id
+app.get('/appointment/appointments/:id', (req, res) => {
+  const appointment = appointments.find(a => a.id === req.params.id);
+  if (appointment) {
+    res.json({
+      message: 'Appointment found',
+      appointment
+    });
+  } else {
+    res.status(404).json({ error: 'Appointment not found' });
   }
 });
 
