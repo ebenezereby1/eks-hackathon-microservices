@@ -7,8 +7,6 @@ metadata:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-path: /health
     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
-    alb.ingress.kubernetes.io/actions.patient-service: >
-      {"type":"forward","forwardConfig":{"targetGroups":[{"serviceName":"patient-service","servicePort":"80"}]}}
 spec:
   ingressClassName: alb
   rules:
@@ -22,8 +20,8 @@ spec:
                 port:
                   number: 80
 
-          - path: /patient/*
-            pathType: ImplementationSpecific
+          - path: /patient
+            pathType: Prefix
             backend:
               service:
                 name: patient-service
