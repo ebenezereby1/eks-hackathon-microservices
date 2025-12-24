@@ -7,21 +7,26 @@ metadata:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-path: /health
     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+
+    # 🔥 STRIP PREFIX (/appointment, /patient)
+    alb.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: alb
   rules:
     - http:
         paths:
-          - path: /appointment
-            pathType: Prefix
+          # Appointment Service
+          - path: /appointment(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: appointment-service
                 port:
                   number: 80
 
-          - path: /patient
-            pathType: Prefix
+          # Patient Service
+          - path: /patient(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: patient-service
