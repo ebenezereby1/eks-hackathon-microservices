@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 
 // ✅ STANDARDIZED PORT
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 // Docker Compose service name + container port
 const APPOINTMENT_SERVICE_URL =
