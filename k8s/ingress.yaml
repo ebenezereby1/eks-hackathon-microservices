@@ -5,8 +5,18 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
+
+    # Health check
     alb.ingress.kubernetes.io/healthcheck-path: /health
     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+
+    # 🔥 Rewrite rules
+    alb.ingress.kubernetes.io/actions.appointment-rewrite: >
+      {"type":"forward","forwardConfig":{"targetGroups":[{"serviceName":"appointment-service","servicePort":"80"}]}}
+
+    alb.ingress.kubernetes.io/actions.patient-rewrite: >
+      {"type":"forward","forwardConfig":{"targetGroups":[{"serviceName":"patient-service","servicePort":"80"}]}}
+
 spec:
   ingressClassName: alb
   rules:
