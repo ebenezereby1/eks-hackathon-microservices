@@ -5,25 +5,40 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
+
+    # ---- Appointment rewrite ----
+    alb.ingress.kubernetes.io/actions.appointment-action: >
+      {"type":"forward","forwardConfig":{"targetGroups":[{"serviceName":"appointment-service","servicePort":"80"}]}}
+    alb.ingress.kubernetes.io/conditions.appointment-action: >
+      [{"field":"path-pattern","pathPatternConfig":{"values":["/appointment/*"]}}]
+
+    # ---- Patient rewrite ----
+    alb.ingress.kubernetes.io/actions.patient-action: >
+      {"type":"forward","forwardConfig":{"targetGroups":[{"serviceName":"patient-service","servicePort":"80"}]}}
+    alb.ingress.kubernetes.io/conditions.patient-action: >
+      [{"field":"path-pattern","pathPatternConfig":{"values":["/patient/*"]}}]
+
+    # Health check (both services expose /health)
     alb.ingress.kubernetes.io/healthcheck-path: /health
     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+
 spec:
   ingressClassName: alb
   rules:
     - http:
         paths:
-          - path: /health
+          - path: /appointment
             pathType: Prefix
             backend:
               service:
-                name: appointment-service
+                name: appointment-action
                 port:
-                  number: 80
+                  name: use-annotation
 
           - path: /patient
             pathType: Prefix
             backend:
               service:
-                name: patient-service
+                name: patient-action
                 port:
-                  number: 80
+                  name: use-annotation
