@@ -47,9 +47,10 @@ jobs:
             --region ap-south-1 \
             --name hackathon-eks-dev
 
-      - name: Delete existing Ingress (force ALB rebuild)
+      - name: Delete existing ingresses (force ALB rebuild)
         run: |
-          kubectl delete ingress microservices-ingress --ignore-not-found
+          kubectl delete ingress appointment-ingress --ignore-not-found
+          kubectl delete ingress patient-ingress --ignore-not-found
 
       - name: Apply Kubernetes manifests
         run: |
