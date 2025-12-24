@@ -16,4 +16,4 @@ spec:
         - name: patient-service
           image: 173763385083.dkr.ecr.ap-south-1.amazonaws.com/patient-service:latest
           ports:
-            - containerPort: 3000
+            - containerPort: 8080
